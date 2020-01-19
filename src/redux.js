@@ -18,23 +18,27 @@ const initialState = {
   isLoading: true,
 };
 
-function reducer(state = initialState.user, action) {
+function reducer(state = initialState, action) {
   switch (action.type) {
     case 'CHANGE_LOGIN':
       return {
         ...state,
-        name: action.payload1,
-        age: action.payload2,
-        gender: action.payload3,
-        id: action.payload4,
+        user: {
+          name: action.payload1,
+          age: action.payload2,
+          gender: action.payload3,
+          id: action.payload4,
+        },
       };
     case 'CHANGE_LOGOUT':
       return {
         ...state,
-        name: action.payload,
-        age: action.payload,
-        gender: action.payload,
-        id: action.payload,
+        user: {
+          name: action.payload,
+          age: action.payload,
+          gender: action.payload,
+          id: action.payload,
+        },
       };
     default:
       break;
