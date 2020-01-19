@@ -1,19 +1,43 @@
 import { createStore } from 'redux';
 
 const initialState = {
-  login: '',
-  password: '',
-  open: false,
+  user: {
+    name: '',
+    id: '',
+    age: '',
+    gender: '',
+  },
+  resetPasswordForm: {
+    current: '',
+    new: '',
+    newConfirm: '',
+  },
+  resetForm: {
+    error: { },
+  },
+  isLoading: true,
 };
 
-function reducer(state = initialState, action) {
+function reducer(state = initialState.user, action) {
   switch (action.type) {
     case 'CHANGE_LOGIN':
-      return { ...state, login: action.payload };
-    case 'CHANGE_PASSWORD':
-      return { ...state, password: action.payload, open: true };
+      return {
+        ...state,
+        name: action.payload1,
+        age: action.payload2,
+        gender: action.payload3,
+        id: action.payload4,
+      };
     case 'CHANGE_LOGOUT':
-      return { ...state, login: action.payload, password: action.payload, open: false }
+      return {
+        ...state,
+        name: action.payload,
+        age: action.payload,
+        gender: action.payload,
+        id: action.payload,
+      };
+    default:
+      break;
   }
 
   return state;
@@ -24,12 +48,10 @@ console.log(store.getState());
 
 const changeLogin = {
   type: 'CHANGE_LOGIN',
-  payload: 'User',
-};
-
-const changePassword = {
-  type: 'CHANGE_PASSWORD',
-  payload: '123',
+  payload1: 'User',
+  payload2: '23',
+  payload3: 'man',
+  payload4: '1',
 };
 
 const chengeLogout = {
@@ -38,10 +60,6 @@ const chengeLogout = {
 };
 
 store.dispatch(changeLogin);
-
-console.log(store.getState());
-
-store.dispatch(changePassword);
 
 console.log(store.getState());
 
