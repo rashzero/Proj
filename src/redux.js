@@ -1,39 +1,50 @@
 import { createStore } from 'redux';
 
 const initialState = {
-  name: 'Pit',
-  secondName: 'Buzo',
+  login: '',
+  password: '',
+  open: false,
 };
 
 function reducer(state = initialState, action) {
   switch (action.type) {
-    case 'CHANGE_NAME':
-      return { ...state, name: action.payload }
-    case 'CHANGE_SECOND_NAME':
-      return { ...state, secondName: action.payload }
+    case 'CHANGE_LOGIN':
+      return { ...state, login: action.payload };
+    case 'CHANGE_PASSWORD':
+      return { ...state, password: action.payload, open: true };
+    case 'CHANGE_LOGOUT':
+      return { ...state, login: action.payload, password: action.payload, open: false }
   }
 
   return state;
-
 }
 const store = createStore(reducer);
 
 console.log(store.getState());
 
-const changeName = {
-  type: 'CHANGE_NAME',
-  payload: 'Ivan',
+const changeLogin = {
+  type: 'CHANGE_LOGIN',
+  payload: 'User',
 };
 
-const changeSecondName = {
-  type: 'CHANGE_SECOND_NAME',
-  payload: 'Ivanov',
+const changePassword = {
+  type: 'CHANGE_PASSWORD',
+  payload: '123',
 };
 
-store.dispatch(changeName);
+const chengeLogout = {
+  type: 'CHANGE_LOGOUT',
+  payload: '',
+};
+
+store.dispatch(changeLogin);
 
 console.log(store.getState());
 
-store.dispatch(changeSecondName);
+store.dispatch(changePassword);
+
+console.log(store.getState());
+
+store.dispatch(chengeLogout);
 
 console.log(store.getState());
