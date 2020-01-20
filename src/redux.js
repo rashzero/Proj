@@ -21,24 +21,25 @@ const initialState = {
 function reducer(state = initialState, action) {
   switch (action.type) {
     case 'CHANGE_LOGIN':
-      return {
-        ...state,
-        user: {
-          name: action.payload1,
-          age: action.payload2,
-          gender: action.payload3,
-          id: action.payload4,
-        },
-      };
     case 'CHANGE_LOGOUT':
       return {
         ...state,
-        user: {
-          name: action.payload,
-          age: action.payload,
-          gender: action.payload,
-          id: action.payload,
-        },
+        user: action.payload,
+      };
+    case 'CHANGE_PASSWORD':
+      return {
+        ...state,
+        resetPasswordForm: action.payload,
+      };
+    case 'CHANGE_ERROR':
+      return {
+        ...state,
+        resetForm: action.payload,
+      };
+    case 'CHANGE_NAME':
+      return {
+        ...state,
+        user: { ...state.user, name: action.payload },
       };
     default:
       break;
@@ -50,23 +51,61 @@ const store = createStore(reducer);
 
 console.log(store.getState());
 
-const changeLogin = {
+const loginActio = () => ({
   type: 'CHANGE_LOGIN',
-  payload1: 'User',
-  payload2: '23',
-  payload3: 'man',
-  payload4: '1',
-};
+  payload: {
+    name: 'User',
+    age: '23',
+    gender: 'man',
+    id: '1',
+  },
+});
 
-const chengeLogout = {
+const logoutAction = () => ({
   type: 'CHANGE_LOGOUT',
-  payload: '',
-};
+  payload: {
+    name: '',
+    age: '',
+    gender: '',
+    id: '',
+  },
+});
 
-store.dispatch(changeLogin);
+const checkPasswordAction = () => ({
+  type: 'CHANGE_PASSWORD',
+  payload: {
+    current: '123',
+    new: '123456',
+    newConfirm: '123456',
+  },
+});
+
+const errorAction = () => ({
+  type: 'CHANGE_ERROR',
+  payload: {
+    error: 'password not validation',
+  },
+});
+
+const changeNameAction = () => ({
+  type: 'CHANGE_NAME',
+  payload: 'Avtor',
+});
+
+store.dispatch(loginActio());
 
 console.log(store.getState());
 
-store.dispatch(chengeLogout);
+store.dispatch(checkPasswordAction());
+
+console.log(store.getState());
+
+store.dispatch(errorAction());
+
+store.dispatch(changeNameAction());
+
+console.log(store.getState());
+
+store.dispatch(logoutAction());
 
 console.log(store.getState());
