@@ -96,7 +96,7 @@ app.delete('/api/users', (req, res) => {
 
 app.get('/api/logout', (req, res) => {
   const user = users.find((userStored) => userStored.id === req.query.id);
-  user.secret = '';
+  res.cookie('sessionId', '');
   res.json({});
 });
 

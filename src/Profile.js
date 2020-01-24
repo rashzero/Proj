@@ -179,20 +179,10 @@ const setUserTextActionObject = (data) => ({
   payload: data,
 });
 
-/* const setPasswordActionObject = (data) => ({
-  type: 'CHANGE_PASSWORD',
-  payload: data,
-}); */
-
 const getUserActionObject = (data) => ({
   type: 'USER_LOGIN',
   payload: data,
 });
-
-/* const getPasswordMessageActionObject = (data) => ({
-  type: 'PASSWORD_CHANGE_ERROR',
-  payload: data,
-}); */
 
 const mapStateToProps = (state) => ({
   state,
@@ -208,14 +198,6 @@ function mapDispatchToProps(dispatch) {
       const UserTextActionResult = setUserTextActionObject(data);
       dispatch(UserTextActionResult);
     },
-    /* setPasswordAction(data) {
-      const PasswordTextActionResult = setPasswordActionObject(data);
-      dispatch(PasswordTextActionResult);
-    },
-    setPassworMessagedAction(data) {
-      const PasswordMessageActionResult = getPasswordMessageActionObject(data);
-      dispatch(PasswordMessageActionResult);
-    }, */
   };
 }
 
