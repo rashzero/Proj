@@ -38,7 +38,7 @@ export default function UserGreeting(props) {
         </span>
         <form noValidate autoComplete="off">
           <Typography className={classes.title} variant="h6">
-            <span onClick={props.handleProfile}>{props.login}</span>
+            <span onClick={props.handleProfile}>{props.user.name}</span>
             <Button
               type="button"
               variant="contained"

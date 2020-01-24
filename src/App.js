@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import HomePage from './HomePage';
@@ -11,11 +11,11 @@ import TabPanel from './TabPanel';
 import NewsList from './NewsList';
 import LoginPage from './LoginPage';
 
-export default function App() {
-  const [useUser, setUseUser] = useState('');
+export default function App(props) {
+  console.log(props.store);
   return (
     <Router>
-      <Header useUser={useUser} setUseUser={setUseUser} />
+      <Header />
       <Grid container direction="row">
         <Grid item xs={3}>
           <TabPanel />

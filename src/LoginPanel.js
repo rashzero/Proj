@@ -3,9 +3,10 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
 import GuestGreeting from './GuestGreeting';
 import UserGreeting from './UserGreeting';
-import Request from './Request';
+import request from './Request';
 
 class LoginPanel extends React.Component {
   state = {
@@ -17,6 +18,7 @@ class LoginPanel extends React.Component {
   componentDidMount() {
     window.addEventListener('storage', this.authListener);
     this.getUser();
+    console.log(this.props);
   }
 
   componentWillUnmount() {
@@ -27,10 +29,10 @@ class LoginPanel extends React.Component {
     if (event.key !== 'message') return;
     switch (event.newValue) {
       case 'logout':
-        this.props.setUseUser('');
+        this.props.outUserAction({});
         break;
       case 'login':
-        if (this.props.useUser) {
+        if (this.props.state.user) {
           return;
         }
         this.getUser();
@@ -41,15 +43,11 @@ class LoginPanel extends React.Component {
   }
 
   getUser = async () => {
-    console.log(this.state.login);
-    const responseUser = await Request({
+    const responseUser = await request({
       url: 'http://localhost:8080/api/users',
     });
-    if (responseUser.name) {
-      this.props.setUseUser(responseUser.name);
-      this.setState({
-        login: responseUser.name,
-      });
+    if (responseUser) {
+      this.props.getUserAction(responseUser);
     }
   }
 
@@ -66,15 +64,15 @@ class LoginPanel extends React.Component {
   }
 
   handleLogout = async () => {
-    await Request({
-      url: (`http://localhost:8080/api/logout?name=${this.state.login}`),
+    const responseLogoutStatus = await request({
+      url: (`http://localhost:8080/api/logout?name=${this.props.state.user.id}`),
     });
 
     localStorage.setItem('message', 'logout');
     this.setState({
       login: '',
     });
-    this.props.setUseUser('');
+    this.props.outUserAction(responseLogoutStatus);
     this.props.history.push('/');
   }
 
@@ -89,7 +87,7 @@ class LoginPanel extends React.Component {
   };
 
   handleLogin = async () => {
-    const responseLoginStatus = await Request({
+    const responseLoginStatus = await request({
       url: 'http://localhost:8080/api/users/login',
       method: 'POST',
       redirect: 'follow',
@@ -101,12 +99,11 @@ class LoginPanel extends React.Component {
 
     if (responseLoginStatus) {
       localStorage.setItem('message', 'login');
-      this.props.setUseUser(this.state.login);
+      this.props.getUserAction(responseLoginStatus);
       this.setState({
         open: true,
       });
     } else {
-      // eslint-disable-next-line no-alert
       alert('Данные неверные');
     }
   }
@@ -120,16 +117,16 @@ class LoginPanel extends React.Component {
   }
 
   render() {
+    console.log(this.props.state);
     return (
       <Greeting
-        login={this.state.login}
         handleLogout={this.handleLogout}
         handleChangeLogin={this.handleChangeLogin}
         handleChangePassword={this.handleChangePassword}
         handleLogin={this.handleLogin}
         handleRegister={this.handleRegister}
         handleProfile={this.handleProfile}
-        useUser={this.props.useUser}
+        user={this.props.state.user}
         open={this.state.open}
         handleClose={this.handleClose}
       />
@@ -138,12 +135,12 @@ class LoginPanel extends React.Component {
 }
 
 function Greeting(props) {
-  if (props.useUser) {
+  if (props.user.name) {
     return (
       <UserGreeting
+        user={props.user}
         handleLogout={props.handleLogout}
         handleProfile={props.handleProfile}
-        login={props.login}
         open={props.open}
         handleClose={props.handleClose}
       />
@@ -159,4 +156,32 @@ function Greeting(props) {
   );
 }
 
-export default withRouter(LoginPanel);
+const getUserActionObject = (data) => ({
+  type: 'USER_LOGIN',
+  payload: data,
+});
+
+const outUserActionObject = (data) => ({
+  type: 'USER_LOGOUT',
+  payload: data,
+});
+
+function mapDispatchToProps(dispatch) {
+  return {
+    getUserAction(data) {
+      const userActionResult = getUserActionObject(data);
+      dispatch(userActionResult);
+    },
+    outUserAction(data) {
+      const userActionResult = outUserActionObject(data);
+      dispatch(userActionResult);
+    },
+  };
+}
+
+
+const mapStateToProps = (state) => ({
+  state,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(LoginPanel));

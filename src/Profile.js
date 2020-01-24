@@ -3,6 +3,7 @@
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
@@ -10,16 +11,10 @@ import Typography from '@material-ui/core/Typography';
 import AvatarUpload from './AvatarUpload';
 import ProfileInfo from './ProfileInfo';
 import CircularIndeterminate from './CircularIndeterminate';
-import Request from './Request';
+import request from './Request';
 
 class Profile extends React.Component {
   state = {
-    user: {
-      name: '',
-      id: '',
-      age: '',
-      gender: '',
-    },
     resetPasswordForm: {
       current: '',
       new: '',
@@ -28,7 +23,7 @@ class Profile extends React.Component {
     resetForm: {
       error: { },
     },
-    isLoading: true,
+    isLoading: false,
   };
 
   componentDidMount() {
@@ -40,19 +35,15 @@ class Profile extends React.Component {
       isLoading: true,
     });
 
-    const responseUser = await Request({
+    const responseUser = await request({
       url: 'http://localhost:8080/api/users',
     });
-    if (responseUser.name) {
-      this.setState({
-        user: {
-          name: responseUser.name,
-          id: responseUser.id,
-          age: responseUser.age,
-        },
-        isLoading: false,
-      });
+    if (responseUser) {
+      this.props.getUserAction(responseUser);
     }
+    this.setState({
+      isLoading: false,
+    });
   }
 
   handleChangeGender = (event) => {
@@ -68,16 +59,17 @@ class Profile extends React.Component {
   }
 
   handleChangeData = (event, renderName) => {
-    const newState = { ...this.state };
+    const newState = { ...this.props.state };
     newState.user[renderName] = event.target.value;
-    this.setState(newState);
+    this.props.setUserTextAction(newState.user);
+    console.log(this.props.setUserTextAction(newState.user));
   };
 
   handleLoginSave = async () => {
-    await Request({
+    await request({
       url: 'http://localhost:8080/api/users',
       method: 'PUT',
-      body: { user: this.state.user },
+      body: { user: this.props.state.user },
     });
     this.props.history.push('/');
   }
@@ -95,13 +87,14 @@ class Profile extends React.Component {
         errorObj.newConfirm = 'the new password does not match';
         break;
       default:
+        alert('Пароль успешно изменен!');
         break;
     }
     return errorObj;
   }
 
   handlePasswordSave = async () => {
-    const responseUser = await Request({
+    const responseUser = await request({
       url: 'http://localhost:8080/api/users/password-edit',
       method: 'PUT',
       body: { resetPasswordForm: this.state.resetPasswordForm },
@@ -118,7 +111,7 @@ class Profile extends React.Component {
     if (this.state.isLoading) {
       return <CircularIndeterminate />;
     }
-
+    console.log(this.props.state);
     return (
       <div>
         <Grid
@@ -139,12 +132,12 @@ class Profile extends React.Component {
                 </Grid>
                 <Grid item xs={8} direction="row">
                   <ProfileInfo
+                    user={this.props.state.user}
                     getUser={this.getUser}
                     handleLoginSave={this.handleLoginSave}
                     handlePasswordSave={this.handlePasswordSave}
                     handleChangeGender={this.handleChangeGender}
                     handleChangeData={this.handleChangeData}
-                    stateUser={this.state.user}
                     resetForm={this.state.resetForm}
                     handleChangePassword={this.handleChangePassword}
                   />
@@ -181,4 +174,49 @@ const useStylesForm = withStyles((theme) => ({
   },
 }))(Profile);
 
-export default useStylesForm;
+const setUserTextActionObject = (data) => ({
+  type: 'CHANGE_USER',
+  payload: data,
+});
+
+/* const setPasswordActionObject = (data) => ({
+  type: 'CHANGE_PASSWORD',
+  payload: data,
+}); */
+
+const getUserActionObject = (data) => ({
+  type: 'USER_LOGIN',
+  payload: data,
+});
+
+/* const getPasswordMessageActionObject = (data) => ({
+  type: 'PASSWORD_CHANGE_ERROR',
+  payload: data,
+}); */
+
+const mapStateToProps = (state) => ({
+  state,
+});
+
+function mapDispatchToProps(dispatch) {
+  return {
+    getUserAction(data) {
+      const userActionResult = getUserActionObject(data);
+      dispatch(userActionResult);
+    },
+    setUserTextAction(data) {
+      const UserTextActionResult = setUserTextActionObject(data);
+      dispatch(UserTextActionResult);
+    },
+    /* setPasswordAction(data) {
+      const PasswordTextActionResult = setPasswordActionObject(data);
+      dispatch(PasswordTextActionResult);
+    },
+    setPassworMessagedAction(data) {
+      const PasswordMessageActionResult = getPasswordMessageActionObject(data);
+      dispatch(PasswordMessageActionResult);
+    }, */
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(useStylesForm);

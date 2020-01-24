@@ -52,7 +52,7 @@ export default function Header() {
 }
             </Grid>
             <Grid container xs={6} justify="flex-end">
-              <LoginPanel useUser={useUser} setUseUser={setUseUser} />
+              <LoginPanel />
             </Grid>
           </Grid>
         </Toolbar>

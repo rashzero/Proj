@@ -43,6 +43,8 @@ export default function ProfileInfo(props) {
   const titleFielsUser = ['Имя: ', 'Возраст: ', 'Пол: '];
   const titleFieldsPas = ['Текущий пароль: ', 'Новый пароль: ', 'Подтвердить пароль: '];
 
+  console.log(props.user);
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -52,7 +54,7 @@ export default function ProfileInfo(props) {
   };
 
   const handleConfirm = async () => {
-    await fetch((`http://localhost:8080/api/users?name=${props.name}`), {
+    await fetch((`http://localhost:8080/api/users?name=${props.user.name}`), {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -60,8 +62,8 @@ export default function ProfileInfo(props) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: props.stateUser.name,
-        id: props.stateUser.id,
+        name: props.user.name,
+        id: props.user.id,
       }),
     });
 
@@ -80,7 +82,7 @@ export default function ProfileInfo(props) {
         id="filled-required-name"
         onChange={(event) => props.handleChangeData(event, renderName)}
         className={classes.textField}
-        defaultValue={props.stateUser[renderName]}
+        defaultValue={props.user[renderName]}
       />
     </Grid>
   ));
