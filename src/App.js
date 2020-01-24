@@ -10,6 +10,7 @@ import Profile from './Profile';
 import TabPanel from './TabPanel';
 import NewsList from './NewsList';
 import LoginPage from './LoginPage';
+import ProfileContainer from './ProfileContainer';
 
 export default function App(props) {
   console.log(props.store);
@@ -27,7 +28,7 @@ export default function App(props) {
             <Route path="/registration" component={RegistrationPage} />
             <Route path="/favorites" component={Favorites} />
             <Route path="/detail/:seriesDitals" component={SerieDetail} />
-            <Route path="/profile" component={Profile} />
+            <Route path="/profile" component={ProfileContainer} />
             <Route path="/news/:page" component={NewsList} />
           </Switch>
         </Grid>

@@ -8,6 +8,7 @@ import App from './App';
 import theme from './theme';
 import ProfileContainer from './ProfileContainer';
 
+<<<<<<< HEAD
 console.log(ProfileContainer);
 
 const initialState = {
@@ -51,6 +52,55 @@ const rootReduser = (state = initialState, action) => {
         ...state,
         resetPasswordForm: action.payload,
       }; */
+=======
+const initialState = {
+  user: {
+    name: '',
+    id: '',
+    age: '',
+    gender: '',
+  },
+  resetPasswordForm: {
+    current: '',
+    new: '',
+    newConfirm: '',
+  },
+  resetForm: {
+    error: { },
+  },
+  isLoading: true,
+};
+
+const loginActio = (newName) => ({
+  type: 'ACTION_CHANGE_LOGIN',
+  payload: {
+    name: newName,
+    age: '23',
+    gender: 'man',
+    id: '1',
+  },
+});
+
+const checkPasswordAction = () => ({
+  type: 'ACTION_CHANGE_PASSWORD',
+  payload: {
+    current: '123',
+    new: '123456',
+    newConfirm: '123456',
+  },
+});
+
+const rootReduser = (state = initialState, action) => {
+  console.log(state);
+  switch (action.type) {
+    case 'CHANGE_NAME':
+      return {
+        ...state,
+        user: { ...state.user, name: action.payload },
+      };
+    case 'CHANGE_USER':
+      return action.payload;
+>>>>>>> 0ea5f1a3fa8b371b0dc3a973931c2dc2cbcc4576
     default:
       break;
   }
