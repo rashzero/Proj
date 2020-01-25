@@ -2,6 +2,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 import { makeStyles, fade } from '@material-ui/core/styles';
+import { useHistory } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -42,6 +43,7 @@ export default function ProfileInfo(props) {
   const fieldsName = ['current', 'new', 'newConfirm'];
   const titleFielsUser = ['Имя: ', 'Возраст: ', 'Пол: '];
   const titleFieldsPas = ['Текущий пароль: ', 'Новый пароль: ', 'Подтвердить пароль: '];
+  const history = useHistory();
 
   console.log(props.user);
 
@@ -69,7 +71,7 @@ export default function ProfileInfo(props) {
 
     localStorage.setItem('message', 'logout');
     // props.setState('');
-    this.props.history.push('/');
+    history.push('/');
   };
 
   const open = Boolean(anchorEl);
