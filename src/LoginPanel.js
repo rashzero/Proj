@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 import GuestGreeting from './GuestGreeting';
 import UserGreeting from './UserGreeting';
 import request from './Request';
+import { getUserActionObject, outUserActionObject } from './actions/actions';
 
 class LoginPanel extends React.Component {
   state = {
@@ -155,16 +156,6 @@ function Greeting(props) {
     />
   );
 }
-
-const getUserActionObject = (data) => ({
-  type: 'USER_LOGIN',
-  payload: data,
-});
-
-const outUserActionObject = (data) => ({
-  type: 'USER_LOGOUT',
-  payload: data,
-});
 
 function mapDispatchToProps(dispatch) {
   return {

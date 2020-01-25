@@ -69,7 +69,7 @@ export default function ProfileInfo(props) {
 
     localStorage.setItem('message', 'logout');
     // props.setState('');
-    props.history.push('/');
+    this.props.history.push('/');
   };
 
   const open = Boolean(anchorEl);

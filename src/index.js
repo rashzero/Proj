@@ -6,39 +6,7 @@ import { createStore } from 'redux';
 import { connect, Provider } from 'react-redux';
 import App from './App';
 import theme from './theme';
-import ProfileContainer from './ProfileContainer';
-
-console.log(ProfileContainer);
-
-const initialState = {
-  user: {
-    name: '',
-    password: '',
-    id: '',
-    age: '',
-    gender: '',
-    email: '',
-    web: '',
-    secret: '',
-  },
-};
-
-const rootReduser = (state = initialState, action) => {
-  switch (action.type) {
-    case 'CHANGE_USER':
-    case 'USER_LOGIN':
-    case 'USER_LOGOUT':
-      console.log(state);
-      return {
-        ...state,
-        user: action.payload,
-      };
-    default:
-      break;
-  }
-
-  return state;
-};
+import { rootReduser } from './reducers/reducer';
 
 const store = createStore(rootReduser);
 

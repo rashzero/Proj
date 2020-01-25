@@ -12,6 +12,7 @@ import AvatarUpload from './AvatarUpload';
 import ProfileInfo from './ProfileInfo';
 import CircularIndeterminate from './CircularIndeterminate';
 import request from './Request';
+import { getUserActionObject, setUserTextActionObject } from './actions/actions';
 
 class Profile extends React.Component {
   state = {
@@ -173,16 +174,6 @@ const useStylesForm = withStyles((theme) => ({
     padding: theme.spacing(2),
   },
 }))(Profile);
-
-const setUserTextActionObject = (data) => ({
-  type: 'CHANGE_USER',
-  payload: data,
-});
-
-const getUserActionObject = (data) => ({
-  type: 'USER_LOGIN',
-  payload: data,
-});
 
 const mapStateToProps = (state) => ({
   state,
