@@ -27,12 +27,20 @@ const useStyles = makeStyles((theme) => ({
 
 export default function UserGreeting(props) {
   const classes = useStyles();
+  const { imagePreviewUrl } = props.user;
+  let $imagePreview = null;
+  const avatar = 'https://i.pinimg.com/236x/f9/ee/ac/f9eeac4c5785989919500487b12a66b9--pumpkin-template-printable-pumpkin-stencils.jpg';
+  if (imagePreviewUrl) {
+    $imagePreview = imagePreviewUrl;
+  } else {
+    $imagePreview = avatar;
+  }
   return (
     <div>
       <div className={classes.root}>
         <span onClick={props.handleProfile}>
           <Avatar
-            src="https://i.pinimg.com/236x/f9/ee/ac/f9eeac4c5785989919500487b12a66b9--pumpkin-template-printable-pumpkin-stencils.jpg"
+            src={$imagePreview}
             className={classes.bigAvatar}
           />
         </span>

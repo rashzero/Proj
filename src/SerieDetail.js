@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -8,8 +9,13 @@ import Box from '@material-ui/core/Box';
 import GridListTileBar from '@material-ui/core/GridListTileBar';
 import IconButton from '@material-ui/core/IconButton';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
+import Rating from '@material-ui/lab/Rating';
 import StarTwoToneIcon from '@material-ui/icons/StarTwoTone';
-import { BrowserRouter as useParams } from 'react-router-dom';
+import {
+  BrowserRouter as Router, Switch, Route, Link, useParams,
+} from 'react-router-dom';
+import { getMoviRaitingActionObject, geFaivoritsActionObject } from './actions/actions';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -41,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-export default function SerieDetail() {
+function SerieDetail(props) {
   const classes = useStyles();
   const { seriesDitals } = useParams();
   const [serie, setSerie] = useState('');
@@ -53,36 +59,16 @@ export default function SerieDetail() {
       .then((value) => setSerie(value));
 
     getFavoritsSeries();
-  }, [getFavoritsSeries, seriesDitals]);
+  }, []); // getFavoritsSeries, seriesDitals
 
   function getFavoritsSeries() {
-    const seriesJson = getCookieValue('favoritesSeries');
-    if (seriesJson) {
-      const seriesJsonParsed = JSON.parse(seriesJson);
-      setFavorites(seriesJsonParsed);
-      console.log(seriesJson);
-    }
-  }
-
-
-  function handleFaivorits() {
-    const favoriteArr = favorites.slice();
-    const index = favoriteArr.indexOf(serie.name);
-    const isFavorite = favoriteArr.includes(serie.name);
-
-    if (isFavorite) {
-      favoriteArr.splice(index, 1);
-    } else {
-      favoriteArr.push(serie.name);
-    }
-    setFavorites(favoriteArr);
-    const jsonFavorites = JSON.stringify(favoriteArr);
-    setCookie('favoritesSeries', jsonFavorites);
+    setFavorites(props.state.user.favorits);
   }
 
   console.log(serie);
   console.log(seriesDitals);
   console.log(favorites);
+  console.log(props.state);
 
   if (!serie) {
     return null;
@@ -98,28 +84,25 @@ export default function SerieDetail() {
   const serieSite = serie.officialSite ? serie.officialSite : 'неизвестно';
   const serieSummary = serie.summary.replace(/<\/?[a-z0-9]*>/gi, '');
 
-  function getCookieValue(value) {
-    const matchesValue = document.cookie.match(new RegExp(
-      `(?:^|; )${value.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1')}=([^;]*)`,
-    ));
-    if (matchesValue) {
-      return (decodeURIComponent(matchesValue[1]));
+  function handleFaivorits() {
+    const favoriteArr = props.state.user.favorits.slice();
+    const index = favoriteArr.findIndex((item) => item.name === seriesDitals);
+    const isFavorite = favoriteArr.find((item) => item.name === seriesDitals);
+    const timeToAddFavorit = Date.now();
+
+    if (isFavorite) {
+      favoriteArr.splice(index, 1);
+    } else {
+      favoriteArr.push({ name: seriesDitals, time: timeToAddFavorit });
     }
-    return undefined;
+    props.getFaivoritsAction(favoriteArr);
   }
 
-  function setCookie(name, value, options) {
-    let updatedCookie = `${encodeURIComponent(name)}=${value}`;
-
-    for (const optionKey in options) {
-      updatedCookie += `; ${optionKey}`;
-      const optionValue = options[optionKey];
-      if (optionValue !== true) {
-        updatedCookie += `=${optionValue}`;
-      }
-    }
-    document.cookie = updatedCookie;
+  let raiting = props.state.user.raitingMove.find((item) => item.id === serie.id);
+  if (!raiting) {
+    raiting = 0;
   }
+  console.log(raiting);
 
   return (
     <div className={classes.root}>
@@ -132,9 +115,27 @@ export default function SerieDetail() {
                 titlePosition="top"
                 actionIcon={(
                   <IconButton className={classes.icon} onClick={handleFaivorits}>
-                    {favorites.includes(serie.name) ? <StarTwoToneIcon color="error" /> : <StarBorderIcon />}
+                    {props.state.user.favorits.find((item) => item.name === serie.name) ? <StarTwoToneIcon color="error" /> : <StarBorderIcon />}
                   </IconButton>
                   )}
+                actionPosition="left"
+                className={classes.titleBar}
+              />
+              <GridListTileBar
+                titlePosition="buttom"
+                actionIcon={(
+                  <IconButton className={classes.icon}>
+                    <Rating
+                      name="simple-controlled"
+                      value={raiting.raiting}
+                      defaultValue={2}
+                      max={10}
+                      onChange={(event, newValue) => {
+                        props.setMoviRaitingAction(newValue, serie.id);
+                      }}
+                    />
+                  </IconButton>
+                )}
                 actionPosition="left"
                 className={classes.titleBar}
               />
@@ -205,3 +206,31 @@ export default function SerieDetail() {
     </div>
   );
 }
+
+const mapStateToProps = (state) => ({
+  state,
+});
+
+function mapDispatchToProps(dispatch) {
+  return {
+    setMoviRaitingAction(raiting, id) {
+      const newState = { ...this.state.user };
+      console.log(newState);
+
+      const currentMove = newState.raitingMove.find((item) => item.id === id);
+      if (currentMove) {
+        currentMove.raiting = raiting;
+      } else {
+        newState.raitingMove.push({ raiting, id });
+      }
+      const moveRatingActionResult = getMoviRaitingActionObject(newState);
+      dispatch(moveRatingActionResult);
+    },
+    getFaivoritsAction(data) {
+      const faivoritsActionResult = geFaivoritsActionObject(data);
+      dispatch(faivoritsActionResult);
+    },
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(SerieDetail);

@@ -2,13 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/styles';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import { connect, Provider } from 'react-redux';
+import { composeWithDevTools } from 'redux-devtools-extension';
+import thunk from 'redux-thunk';
 import App from './App';
 import theme from './theme';
 import { rootReduser } from './reducers/reducer';
 
-const store = createStore(rootReduser);
+
+const store = createStore(rootReduser, composeWithDevTools(applyMiddleware(thunk)));
 
 console.log(store.getState());
 
@@ -19,9 +22,9 @@ class MainComponent extends React.Component {
       <div>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <App 
+          <App
             store={this.props}
-            />
+          />
         </ThemeProvider>
       </div>
     );

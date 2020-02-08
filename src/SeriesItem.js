@@ -1,6 +1,7 @@
 import React from 'react';
 import SeriesList from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
+import { useHistory } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
@@ -31,6 +32,7 @@ const useStyles = makeStyles({
 });
 
 export default function SeriesItem(props) {
+  const history = useHistory();
   const classes = useStyles();
   const imgEror = 'https://static.tildacdn.com/tild3166-3965-4530-b562-313134366634/blog-1.jpg';
   const serieImg = props.serie.show.image ? props.serie.show.image.original : imgEror;
@@ -38,6 +40,22 @@ export default function SeriesItem(props) {
     e.stopPropagation();
 
     props.handleFaivorits();
+  }
+
+  const serieToFavorit = (props.stateFavorits ? props.stateFavorits.find((item) => item.name === props.serie.show.name) : null);
+  let dateAdded;
+  if (serieToFavorit) {
+
+    const date = new Date(serieToFavorit.time);
+    const day = date.getDate();
+    const month = date.getMonth();
+    const year = date.getFullYear();
+    const hourse = date.getHours();
+    const minutes = date.getMinutes();
+
+    dateAdded = `Добавленно в избранное: ${day}.${month + 1}.${year} ${hourse}:${minutes}`;
+  } else {
+    dateAdded = ' ';
   }
 
   return (
@@ -51,7 +69,7 @@ export default function SeriesItem(props) {
           titlePosition="top"
           actionIcon={(
             <IconButton className={classes.icon} onClick={hendleFavoritClick}>
-              {props.stateFavorits.includes(props.serie.show.name) ? <StarTwoToneIcon color="error" /> : <StarBorderIcon />}
+              {props.stateFavorits.find((item) => item.name === props.serie.show.name) ? <StarTwoToneIcon color="error" /> : <StarBorderIcon />}
             </IconButton>
                       )}
           actionPosition="left"
@@ -66,6 +84,9 @@ export default function SeriesItem(props) {
                премьера:
             {' '}
             {props.serie.show.premiered}
+          </SeriesList>
+          <SeriesList component="p">
+            { dateAdded }
           </SeriesList>
         </CardContent>
       </CardActionArea>

@@ -2,12 +2,11 @@
 import React from 'react';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import { withStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 import Button from '@material-ui/core/Button';
+import { setUserTextActionObject } from './actions/actions';
 
 class AvatarUpload extends React.Component {
-  state = {
-    imagePreviewUrl: '',
-  };
 
   handleImageChange(e) {
     e.preventDefault();
@@ -16,16 +15,20 @@ class AvatarUpload extends React.Component {
     const file = e.target.files[0];
 
     reader.onloadend = () => {
-      this.setState({
+      const newState = { ...this.props.state };
+      newState.user.imagePreviewUrl = reader.result;
+      this.props.setUserImgAction(newState.user);
+
+      /* this.setState({
         imagePreviewUrl: reader.result,
-      });
+      }); */
     };
 
     reader.readAsDataURL(file);
   }
 
   render() {
-    const { imagePreviewUrl } = this.state;
+    const { imagePreviewUrl } = this.props.state.user;
     let $imagePreview = null;
     const avatar = 'https://i.pinimg.com/236x/f9/ee/ac/f9eeac4c5785989919500487b12a66b9--pumpkin-template-printable-pumpkin-stencils.jpg';
     if (imagePreviewUrl) {
@@ -75,4 +78,17 @@ const useStyles = withStyles((theme) => ({
   },
 }))(AvatarUpload);
 
-export default useStyles;
+const mapStateToProps = (state) => ({
+  state,
+});
+
+function mapDispatchToProps(dispatch) {
+  return {
+    setUserImgAction(data) {
+      const userActionResult = setUserTextActionObject(data);
+      dispatch(userActionResult);
+    },
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(useStyles);

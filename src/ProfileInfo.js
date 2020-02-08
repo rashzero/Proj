@@ -114,6 +114,12 @@ export default function ProfileInfo(props) {
     </Grid>
   ));
 
+  const renderTracksfield = props.tracks.map((tracksName) => (
+    <Grid item>
+      <Box color="primary.main" fontSize={16} paddingTop={1}>{tracksName}</Box>
+    </Grid>
+  ));
+
   return (
     <div>
       <Grid container>
@@ -246,6 +252,18 @@ export default function ProfileInfo(props) {
               </center>
             </Popover>
           </center>
+          <Button
+            type="button"
+            variant="contained"
+            color="secondary"
+            className={classes.button}
+            onClick={props.handleGetTracks}
+          >
+              Тор 5 синглов
+          </Button>
+          <Grid item>
+            <Box color="primary.main" fontSize={16} paddingTop={1}>{renderTracksfield}</Box>
+          </Grid>
         </Grid>
       </Grid>
     </div>

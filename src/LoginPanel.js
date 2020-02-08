@@ -43,13 +43,8 @@ class LoginPanel extends React.Component {
     }
   }
 
-  getUser = async () => {
-    const responseUser = await request({
-      url: 'http://localhost:8080/api/users',
-    });
-    if (responseUser) {
-      this.props.getUserAction(responseUser);
-    }
+  getUser = () => {
+    this.props.getUserAction();
   }
 
   handleChangeLogin = (event) => {
@@ -65,15 +60,11 @@ class LoginPanel extends React.Component {
   }
 
   handleLogout = async () => {
-    const responseLogoutStatus = await request({
-      url: (`http://localhost:8080/api/logout?name=${this.props.state.user.id}`),
-    });
-
     localStorage.setItem('message', 'logout');
     this.setState({
       login: '',
     });
-    this.props.outUserAction(responseLogoutStatus);
+    this.props.outUserAction(this.props.state.user.id);
     this.props.history.push('/');
   }
 
@@ -88,24 +79,11 @@ class LoginPanel extends React.Component {
   };
 
   handleLogin = async () => {
-    const responseLoginStatus = await request({
-      url: 'http://localhost:8080/api/users/login',
-      method: 'POST',
-      redirect: 'follow',
-      body: {
-        name: this.state.login,
-        password: this.state.password,
-      },
-    });
-
-    if (responseLoginStatus) {
-      localStorage.setItem('message', 'login');
-      this.props.getUserAction(responseLoginStatus);
+    this.props.loginAction(this.state.login, this.state.password);
+    if (this.state.login) {
       this.setState({
         open: true,
       });
-    } else {
-      alert('Данные неверные');
     }
   }
 
@@ -159,13 +137,38 @@ function Greeting(props) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    getUserAction(data) {
-      const userActionResult = getUserActionObject(data);
+    async getUserAction() {
+      const responseUser = await request({
+        url: 'http://localhost:8080/api/users',
+      });
+      const userActionResult = getUserActionObject(responseUser);
       dispatch(userActionResult);
     },
-    outUserAction(data) {
-      const userActionResult = outUserActionObject(data);
+
+    async outUserAction(data) {
+      const responseLogoutStatus = await request({
+        url: (`http://localhost:8080/api/logout?name=${data}`),
+      });
+      const userActionResult = outUserActionObject(responseLogoutStatus);
       dispatch(userActionResult);
+    },
+
+    async loginAction(login, pas) {
+      const responseLoginStatus = await request({
+        url: 'http://localhost:8080/api/users/login',
+        method: 'POST',
+        body: {
+          name: login,
+          password: pas,
+        },
+      });
+      console.log(responseLoginStatus);
+      if (responseLoginStatus.name) {
+        localStorage.setItem('message', 'login');
+        this.getUserAction();
+      } else {
+        alert('Данные неверные');
+      }
     },
   };
 }

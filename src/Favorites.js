@@ -1,13 +1,23 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 import GridList from '@material-ui/core/GridList';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
+import FilterListIcon from '@material-ui/icons/FilterList';
 import SeriesItem from './SeriesItem';
+import Grid from '@material-ui/core/Grid';
+import { geFaivoritsActionObject } from './actions/actions';
+
 
 class Favorites extends React.Component {
   state = {
     series: [],
-    favorits: [],
+    favorites: [],
+    filter: 'ascending',
   };
+
+  i = 0;
 
   componentDidMount() {
     console.log('Страница загружена');
@@ -15,80 +25,108 @@ class Favorites extends React.Component {
   }
 
   getFavoritsSeries() {
-    const seriesJson = this.getCookieValue('favoritesSeries');
-    const seriesJsonParsed = JSON.parse(seriesJson);
+    const seriesJsonParsed = this.props.state.user.favorits;
     const promises = [];
     for (const serieName of seriesJsonParsed) {
-      const promis = fetch(`http://api.tvmaze.com/singlesearch/shows?q=${serieName}`)
+      const promis = fetch(`http://api.tvmaze.com/singlesearch/shows?q=${serieName.name}`)
         .then((response) => (response.json()));
       promises.push(promis);
+      console.log(promises);
     }
     Promise.all(promises)
       .then((result) => result.map((item) => ({ show: item })))
-      .then((value) => this.setState({
-        series: value,
+      .then((series) => this.setState({
+        series,
       }));
-
-    this.setState({
-      favorits: seriesJsonParsed,
-    });
   }
 
+  compare = (seriesA, seriesB) => {
+    switch (this.state.filter) {
+      case 'ascending':
+        return seriesB.time - seriesA.time;
+      case 'descending':
+        return seriesA.time - seriesB.time;
+      case 'byName':
+        const nameA = seriesA.name.toLowerCase();
+        const nameB = seriesB.name.toLowerCase();
 
-  getCookieValue(value) {
-    const matchesValue = document.cookie.match(new RegExp(
-      `(?:^|; )${value.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1')}=([^;]*)`,
-    ));
-    if (matchesValue) {
-      return (decodeURIComponent(matchesValue[1]));
+        if (nameA < nameB)
+          return -1
+        if (nameA > nameB)
+          return 1
+        return 0;
+      default:
+        break;
     }
-    return undefined;
   }
 
-  setCookie(name, value, options) {
-    let updatedCookie = `${encodeURIComponent(name)}=${value}`;
-    for (const optionKey in options) {
-      updatedCookie += `; ${optionKey}`;
-      const optionValue = options[optionKey];
-      if (optionValue !== true) {
-        updatedCookie += `=${optionValue}`;
-      }
+  handleChangeSortOrder = () => {
+    this.i++;
+    if (this.i === 1) {
+      this.setState({
+        filter: 'ascending',
+      });
+    } else if (this.i === 2) {
+      this.setState({
+        filter: 'descending',
+      });
+    } else if (this.i === 3) {
+      this.setState({
+        filter: 'byName',
+      });
     }
-    document.cookie = updatedCookie;
+    console.log(this.state.filter);
+    this.props.state.user.favorits.sort(this.compare);
+    this.getFavoritsSeries();
+    if (this.i === 3) { this.i = 0; }
   }
 
   handleFaivorits(serie) {
-    const favoriteArr = this.state.favorits.slice();
-    const index = favoriteArr.indexOf(serie.show.name);
-    const isFavorite = favoriteArr.includes(serie.show.name);
+    const favoriteArr = this.props.state.user.favorits.slice();
+    const index = favoriteArr.findIndex((item) => item.name === serie.show.name);
+    const isFavorite = favoriteArr.find((item) => item.name === serie.show.name);
+    const timeToAddFavorit = Date.now();
 
     if (isFavorite) {
       favoriteArr.splice(index, 1);
     } else {
-      favoriteArr.push(serie.show.name);
+      favoriteArr.push({ name: serie.show.name, time: timeToAddFavorit });
     }
-    this.setState({
-      favorits: favoriteArr,
-    });
-    const jsonFavorites = JSON.stringify(favoriteArr);
-    this.setCookie('favoritesSeries', jsonFavorites);
+    this.props.getFaivoritsAction(favoriteArr);
   }
 
   render() {
     const { series } = this.state;
-    const stateFavorits = this.state.favorits;
+    const stateFavorits = this.props.state.user.favorits;
+
+    /* if (stateFavorits) {
+      stateFavorits.sort(this.compare);
+    } */
     console.log(series);
+    console.log(stateFavorits);
+
     return (
       <div className={this.props.classes.root}>
-        <GridList cellHeight={180} className={this.props.classes.gridList}>
-          {series.map((serie) => (
-            <SeriesItem
-              serie={serie}
-              handleFaivorits={() => this.handleFaivorits(serie)}
-              stateFavorits={stateFavorits}
-            />
-          ))}
-        </GridList>
+        <Grid container>
+          <Grid item xs={12}>
+            <Tooltip title="Filter list">
+              <IconButton aria-label="filter list" onClick={this.handleChangeSortOrder}>
+                <FilterListIcon />
+              </IconButton>
+            </Tooltip>
+          </Grid>
+          <Grid item xs={12}>
+            <GridList cellHeight={180} className={this.props.classes.gridList}>
+              {series.sort().map((serie) => (
+                <SeriesItem
+                  serie={serie}
+                  handleFaivorits={() => this.handleFaivorits(serie)}
+                  stateFavorits={stateFavorits}
+                />
+              ))}
+            </GridList>
+          </Grid>
+        </Grid>
       </div>
     );
   }
@@ -104,7 +142,7 @@ const useStylesForm = withStyles((theme) => ({
   },
   gridList: {
     width: '80%',
-    height: '100%',
+    height: 'auto',
   },
   button: {
     margin: theme.spacing(3),
@@ -115,5 +153,17 @@ const useStylesForm = withStyles((theme) => ({
   },
 }))(Favorites);
 
+const mapStateToProps = (state) => ({
+  state,
+});
 
-export default useStylesForm;
+function mapDispatchToProps(dispatch) {
+  return {
+    getFaivoritsAction(data) {
+      const faivoritsActionResult = geFaivoritsActionObject(data);
+      dispatch(faivoritsActionResult);
+    },
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(useStylesForm);

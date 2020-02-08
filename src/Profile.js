@@ -12,7 +12,7 @@ import AvatarUpload from './AvatarUpload';
 import ProfileInfo from './ProfileInfo';
 import CircularIndeterminate from './CircularIndeterminate';
 import request from './Request';
-import { getUserActionObject, setUserTextActionObject } from './actions/actions';
+import { getUserActionObject, setUserTextActionObject, getTracksActionObject } from './actions/actions';
 
 class Profile extends React.Component {
   state = {
@@ -32,16 +32,12 @@ class Profile extends React.Component {
   }
 
   getUser = async () => {
-    this.setState({
+    await this.setState({
       isLoading: true,
     });
 
-    const responseUser = await request({
-      url: 'http://localhost:8080/api/users',
-    });
-    if (responseUser) {
-      this.props.getUserAction(responseUser);
-    }
+    await this.props.getUserAction();
+
     this.setState({
       isLoading: false,
     });
@@ -66,12 +62,13 @@ class Profile extends React.Component {
     console.log(this.props.setUserTextAction(newState.user));
   };
 
+  handleGetTracks = () => {
+    this.props.getTracksAction();
+    console.log(this.props.state.tracks);
+  }
+
   handleLoginSave = async () => {
-    await request({
-      url: 'http://localhost:8080/api/users',
-      method: 'PUT',
-      body: { user: this.props.state.user },
-    });
+    this.props.saveLoginAction(this.props.state.user);
     this.props.history.push('/');
   }
 
@@ -141,6 +138,8 @@ class Profile extends React.Component {
                     handleChangeData={this.handleChangeData}
                     resetForm={this.state.resetForm}
                     handleChangePassword={this.handleChangePassword}
+                    handleGetTracks={this.handleGetTracks}
+                    tracks={this.props.state.tracks}
                   />
                 </Grid>
               </Grid>
@@ -181,13 +180,29 @@ const mapStateToProps = (state) => ({
 
 function mapDispatchToProps(dispatch) {
   return {
-    getUserAction(data) {
-      const userActionResult = getUserActionObject(data);
+    async getUserAction() {
+      const responseUser = await request({
+        url: 'http://localhost:8080/api/users',
+      });
+      const userActionResult = getUserActionObject(responseUser);
       dispatch(userActionResult);
     },
     setUserTextAction(data) {
       const UserTextActionResult = setUserTextActionObject(data);
       dispatch(UserTextActionResult);
+    },
+    getTracksAction() {
+      const tracksActionResult = getTracksActionObject();
+      dispatch(tracksActionResult);
+    },
+    async saveLoginAction(data) {
+      const responseUser = await request({
+        url: 'http://localhost:8080/api/users',
+        method: 'PUT',
+        body: { user: data },
+      });
+      const saveLoginActionResult = getUserActionObject(responseUser);
+      dispatch(saveLoginActionResult);
     },
   };
 }

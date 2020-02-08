@@ -1,20 +1,20 @@
 import React from 'react';
 import GridList from '@material-ui/core/GridList';
 import { withStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import SeriesItem from './SeriesItem';
-import Request from './Request';
+import request from './Request';
+import { geSeriesActionObject, geFaivoritsActionObject } from './actions/actions';
 
 class HomePage extends React.Component {
   textInput = React.createRef();
 
   state = {
-    series: [],
     value: '',
     favorits: [],
-    seriesDitals: '',
     time: '',
   };
 
@@ -25,15 +25,6 @@ class HomePage extends React.Component {
       1000,
     );
     this.textInput.current.focus();
-    const seriesJson = this.getCookieValue('favoritesSeries');
-    if (seriesJson) {
-      const seriesJsonParsed = JSON.parse(seriesJson);
-      this.setState({
-        favorits: seriesJsonParsed,
-      });
-    } else {
-      this.setCookie('favoritesSeries', '[]');
-    }
   }
 
   componentWillUnmount() {
@@ -41,25 +32,19 @@ class HomePage extends React.Component {
   }
 
   getSeries = (event) => {
-    fetch(`https://api.tvmaze.com/search/shows?q=${this.state.value}`)
-      .then((response) => response.json())
-      .then((data) => this.setState({
-        series: data,
-      }));
+    this.props.getSeriesAction(this.state.value);
     event.preventDefault();
   };
 
   handleSeriesInfo(serie) {
-    this.setState({
-      seriesDitals: serie,
-    });
+    console.log(serie);
     this.props.history.push(`/detail/${serie.show.name}`);
   }
 
   handleChange = (event) => this.setState({ value: event.target.value });
 
   getTimeFromServer = async () => {
-    const response = await Request({
+    const response = await request({
       url: 'http://localhost:8080/api/time',
     });
     this.setState({
@@ -91,25 +76,22 @@ class HomePage extends React.Component {
   }
 
   handleFaivorits(serie) {
-    const favoriteArr = this.state.favorits.slice();
-    const index = favoriteArr.indexOf(serie.show.name);
-    const isFavorite = favoriteArr.includes(serie.show.name);
+    const favoriteArr = this.props.state.user.favorits.slice();
+    const index = favoriteArr.findIndex((item) => item.name === serie.show.name);
+    const isFavorite = favoriteArr.find((item) => item.name === serie.show.name);
+    const timeToAddFavorit = Date.now();
 
     if (isFavorite) {
       favoriteArr.splice(index, 1);
     } else {
-      favoriteArr.push(serie.show.name);
+      favoriteArr.push({ name: serie.show.name, time: timeToAddFavorit });
     }
-    this.setState({
-      favorits: favoriteArr,
-    });
-    const jsonFavorites = JSON.stringify(favoriteArr);
-    this.setCookie('favoritesSeries', jsonFavorites);
+    this.props.getFaivoritsAction(favoriteArr);
   }
 
   render() {
-    const { series } = this.state;
-    const stateFavorits = this.state.favorits;
+    const { series } = this.props.state;
+    const stateFavorits = this.props.state.user.favorits;
 
     return (
       <div>
@@ -183,5 +165,23 @@ const useStylesForm = withStyles((theme) => ({
   },
 }))(HomePage);
 
+const mapStateToProps = (state) => ({
+  state,
+});
 
-export default useStylesForm;
+function mapDispatchToProps(dispatch) {
+  return {
+    async getSeriesAction(data) {
+      const responseSeries = await fetch(`https://api.tvmaze.com/search/shows?q=${data}`);
+      const responseSeriesJson = await responseSeries.json();
+      const seriesActionResult = geSeriesActionObject(responseSeriesJson);
+      dispatch(seriesActionResult);
+    },
+    getFaivoritsAction(data) {
+      const faivoritsActionResult = geFaivoritsActionObject(data);
+      dispatch(faivoritsActionResult);
+    },
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(useStylesForm);

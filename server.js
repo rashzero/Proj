@@ -42,6 +42,9 @@ app.post('/api/users', (req, res) => {
     web,
     email,
     gender,
+    imagePreviewUrl: '',
+    raitingMove: [],
+    favorits: [],
   };
   users.push(user);
   res.json({});
@@ -56,7 +59,8 @@ app.put('/api/users', (req, res) => {
   user.name = name;
   user.age = age;
   user.gender = gender;
-  res.json({});
+  const userPropertiex = parseUser(user);
+  res.json(userPropertiex);
 });
 
 app.put('/api/users/password-edit', (req, res) => {
@@ -95,7 +99,7 @@ app.delete('/api/users', (req, res) => {
 });
 
 app.get('/api/logout', (req, res) => {
-  const user = users.find((userStored) => userStored.id === req.query.id);
+  users.find((userStored) => userStored.id === req.query.id);
   res.cookie('sessionId', '');
   res.json({});
 });
@@ -106,13 +110,13 @@ app.post('/api/users/login', (req, res) => {
   const randomNumber = Math.floor(Math.random() * 1000000);
   const { name, password } = req.body;
   const user = users.find((userStored) => (userStored.name === name && userStored.password === password));
-  user.secret = String(randomNumber);
   console.log(user);
   if (user == null) {
     res.json({ user: '' });
   }
   try {
     if (password === user.password) {
+      user.secret = String(randomNumber);
       res.cookie('sessionId', user.secret);
       const userPropertiex = parseUser(user);
       res.json(userPropertiex);
@@ -120,7 +124,7 @@ app.post('/api/users/login', (req, res) => {
       res.json({});
     }
   } catch {
-    res.status(500).send({});
+    res.json({});
   }
 });
 

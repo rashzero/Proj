@@ -1,11 +1,13 @@
 import React from 'react';
 import GridList from '@material-ui/core/GridList';
 import { withStyles } from '@material-ui/core/styles';
+import { connect } from 'react-redux';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Typography from '@material-ui/core/Typography';
 import CircularIndeterminate from './CircularIndeterminate';
 import NewsItem from './NewsItem';
+import { geNewsActionObject, geNewsActionObjectInCache } from './actions/actions';
 
 class NewsList extends React.Component {
     chunkSize = 10;
@@ -16,7 +18,7 @@ class NewsList extends React.Component {
 
   state = {
     news: [],
-    isLoading: true,
+    isLoading: false,
     cache: {},
   };
 
@@ -47,29 +49,16 @@ class NewsList extends React.Component {
   }
 
     getNewsPage = async (index) => {
-      const cacheItem = { ...this.state.cache };
+      this.setState({
+        isLoading: true,
+      });
+      const seriesArr = await this.props.getNewsAction(index);
+      console.log(seriesArr);
       this.props.history.push(`/news/${index}`);
-      const responseNumberOfPage = await fetch(`http://localhost:8080/api/news/${index}`);
-      const responseJsonNumberOfPage = await responseNumberOfPage.json();
-      this.numberOfPage = responseJsonNumberOfPage.numbOfPage;
-
-      if (index in cacheItem) {
-        this.setState({
-          news: this.state.cache[index],
-        });
-      } else {
-        this.setState({
-          isLoading: true,
-        });
-
-        cacheItem[index] = responseJsonNumberOfPage.news;
-
-        this.setState({
-          news: responseJsonNumberOfPage.news,
-          isLoading: false,
-          cache: cacheItem,
-        });
-      }
+      this.numberOfPage = this.props.state.numberOfPage;
+      this.setState({
+        isLoading: false,
+      });
     }
 
     nextPage = () => {
@@ -81,9 +70,9 @@ class NewsList extends React.Component {
     }
 
     render() {
-      const { news, isLoading } = this.state;
+      const { news } = this.props.state;
 
-      if (isLoading) {
+      if (this.state.isLoading) {
         return <CircularIndeterminate />;
       }
 
@@ -150,4 +139,33 @@ const useStylesForm = withStyles((theme) => ({
   },
 }))(NewsList);
 
-export default useStylesForm;
+const mapStateToProps = (state) => ({
+  state,
+});
+
+function mapDispatchToProps(dispatch) {
+  return {
+    async getNewsAction(data) {
+      const cacheItem = { ...this.state.cache };
+      const responseNumberOfPage = await fetch(`http://localhost:8080/api/news/${data}`);
+      const responseJsonNumberOfPage = await responseNumberOfPage.json();
+      if (data in cacheItem) {
+        const newsActionResult = geNewsActionObject(this.state.cache[data]);
+        dispatch(newsActionResult);
+      } else {
+        cacheItem[data] = responseJsonNumberOfPage.news;
+
+        const newsActionResult = geNewsActionObjectInCache(
+          responseJsonNumberOfPage.news,
+          cacheItem,
+          responseJsonNumberOfPage.numbOfPage,
+        );
+        dispatch(newsActionResult);
+      }
+      const newsActionResult = geNewsActionObject(responseJsonNumberOfPage.news);
+      dispatch(newsActionResult);
+    },
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(useStylesForm);

@@ -22,8 +22,8 @@ export default function App(props) {
         </Grid>
         <Grid item xs={9}>
           <Switch>
-            <Route path="/" exact component={LoginPage} />
-            <Route path="/Home" exact component={HomePage} />
+            <Route path="/LoginPage" exact component={LoginPage} />
+            <Route path="/" exact component={HomePage} />
             <Route path="/registration" component={RegistrationPage} />
             <Route path="/favorites" component={Favorites} />
             <Route path="/detail/:seriesDitals" component={SerieDetail} />
