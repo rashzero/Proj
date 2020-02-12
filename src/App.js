@@ -17,10 +17,10 @@ export default function App(props) {
     <Router>
       <Header />
       <Grid container direction="row">
-        <Grid item xs={3}>
+        <Grid item xs={2}>
           <TabPanel />
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={10}>
           <Switch>
             <Route path="/LoginPage" exact component={LoginPage} />
             <Route path="/" exact component={HomePage} />

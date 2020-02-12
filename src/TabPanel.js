@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.paper,
     display: 'flex',
     height: '100%',
-    width: 250,
+    width: '100%',
   },
   tabs: {
     borderRight: `1px solid ${theme.palette.divider}`,

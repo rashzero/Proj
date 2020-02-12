@@ -1,3 +1,4 @@
+/* eslint-disable react/state-in-constructor */
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
@@ -5,8 +6,11 @@ import GridList from '@material-ui/core/GridList';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import SeriesItem from './SeriesItem';
 import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+import ViewModuleIcon from '@material-ui/icons/ViewModule';
+import ViewStreamIcon from '@material-ui/icons/ViewStream';
+import SeriesItem from './SeriesItem';
 import { geFaivoritsActionObject } from './actions/actions';
 
 
@@ -14,13 +18,24 @@ class Favorites extends React.Component {
   state = {
     series: [],
     favorites: [],
-    filter: 'ascending',
+    filter: {
+      all: [
+        { value: 'ascending', name: 'по возрастанию' },
+        { value: 'descending', name: 'по убыванию' },
+        { value: 'byName', name: 'по имени' },
+      ],
+      currient: '',
+    },
+    view: '',
   };
 
   i = 0;
 
   componentDidMount() {
     console.log('Страница загружена');
+    const newState = { ...this.state };
+    newState.filter.currient = 'descending';
+    this.setState(newState);
     this.getFavoritsSeries();
   }
 
@@ -41,7 +56,7 @@ class Favorites extends React.Component {
   }
 
   compare = (seriesA, seriesB) => {
-    switch (this.state.filter) {
+    switch (this.state.filter.currient) {
       case 'ascending':
         return seriesB.time - seriesA.time;
       case 'descending':
@@ -50,10 +65,8 @@ class Favorites extends React.Component {
         const nameA = seriesA.name.toLowerCase();
         const nameB = seriesB.name.toLowerCase();
 
-        if (nameA < nameB)
-          return -1
-        if (nameA > nameB)
-          return 1
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
         return 0;
       default:
         break;
@@ -64,22 +77,46 @@ class Favorites extends React.Component {
     this.i++;
     if (this.i === 1) {
       this.setState({
-        filter: 'ascending',
+        filter: {
+          currient: 'ascending',
+        },
       });
     } else if (this.i === 2) {
       this.setState({
-        filter: 'descending',
+        filter: {
+          currient: 'descending',
+        },
       });
     } else if (this.i === 3) {
       this.setState({
-        filter: 'byName',
+        filter: {
+          currient: 'byName',
+        },
       });
     }
-    console.log(this.state.filter);
-    this.props.state.user.favorits.sort(this.compare);
-    this.getFavoritsSeries();
+    console.log(this.state.filter.currient);
     if (this.i === 3) { this.i = 0; }
   }
+
+  handleChangeSorting = (velueSort) => {
+    const newState = { ...this.state };
+    newState.filter.currient = velueSort;
+    this.setState(newState);
+    this.props.state.user.favorits.sort(this.compare);
+    this.getFavoritsSeries();
+  };
+
+  handleViewVariant = () => {
+    if (this.state.view) {
+      this.setState({
+        view: false,
+      });
+    } else if (!this.state.view) {
+      this.setState({
+        view: true,
+      });
+    }
+  };
 
   handleFaivorits(serie) {
     const favoriteArr = this.props.state.user.favorits.slice();
@@ -99,19 +136,41 @@ class Favorites extends React.Component {
     const { series } = this.state;
     const stateFavorits = this.props.state.user.favorits;
 
-    /* if (stateFavorits) {
-      stateFavorits.sort(this.compare);
-    } */
+    const renderButtonSorting = this.state.filter.all.map((buttonName) => (
+      <Button
+        className={this.props.classes.button}
+        id={buttonName.value}
+        // disabled={this.state.filter.currient === buttonName.value}
+        color={this.state.filter.currient === buttonName.value ? 'primary' : 'default'}
+        variant="outlined"
+        onClick={() => this.handleChangeSorting(buttonName.value)}
+        className={this.props.classes.button}
+        type="button"
+      >
+        {buttonName.name}
+      </Button>
+    ));
     console.log(series);
     console.log(stateFavorits);
 
     return (
       <div className={this.props.classes.root}>
-        <Grid container>
+        <Grid
+          container
+          direction="row"
+          justify="flex-start"
+          alignItems="flex-start"
+        >
           <Grid item xs={12}>
-            <Tooltip title="Filter list">
+            {renderButtonSorting}
+            <Tooltip title="Filter list" className={this.props.classes.viewButton}>
               <IconButton aria-label="filter list" onClick={this.handleChangeSortOrder}>
-                <FilterListIcon />
+                <FilterListIcon color="secondary" className={this.props.classes.buttonPanel} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="View list" className={this.props.classes.viewButton}>
+              <IconButton aria-label="view list" onClick={this.handleViewVariant}>
+                {this.state.view ? <ViewModuleIcon className={this.props.classes.buttonPanel} /> : <ViewStreamIcon className={this.props.classes.buttonPanel} />}
               </IconButton>
             </Tooltip>
           </Grid>
@@ -122,6 +181,7 @@ class Favorites extends React.Component {
                   serie={serie}
                   handleFaivorits={() => this.handleFaivorits(serie)}
                   stateFavorits={stateFavorits}
+                  view={this.state.view}
                 />
               ))}
             </GridList>
@@ -141,15 +201,22 @@ const useStylesForm = withStyles((theme) => ({
     backgroundColor: theme.palette.background.paper,
   },
   gridList: {
-    width: '80%',
+    width: 'auto',
     height: 'auto',
+    marginLeft: theme.spacing(1),
   },
   button: {
-    margin: theme.spacing(3),
+    margin: theme.spacing(1),
   },
   textField: {
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
+  },
+  viewButton: {
+    marginLeft: '15px',
+  },
+  buttonPanel: {
+    fontSize: '30px',
   },
 }))(Favorites);
 
